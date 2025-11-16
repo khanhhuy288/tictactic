@@ -243,21 +243,6 @@ function moveLeft(board) {
     return false;
 }
 
-// /**
-//  * Evaluate the board when it's full (in terminal state).
-//  * @param board The board.
-//  * @returns {number} -100 if AI wins, 100 if human wins, 0 if it's a draw.
-//  */
-// function evaluate(board) {
-//     if (checkWin(board, huPlayer)) {
-//         return -100;
-//     } else if (checkWin(board, aiPlayer)) {
-//         return 100;
-//     } else if (!moveLeft(board)) {
-//         return 0;
-//     }
-// }
-
 /**
  * The heuristic evaluation function for the current board
  * @param board The board.
@@ -271,26 +256,6 @@ function evaluate(board) {
     }
     return score;
 }
-
-// function evaluate(board) {
-//     let pos_X = [];
-//     let pos_O = [];
-//
-//     for (var [i, cell] of board.entries()) {
-//         if (cell == 'X')
-//             pos_X.push(i);
-//
-//         if (cell == 'O')
-//             pos_O.push(i);
-//     }
-//
-//     // number of possible winning line for X
-//     let score_X = winCombos.reduce((acc, combo) => acc + (combo.filter(val => pos_O.indexOf(val) !== -1).length === 0 ? 1 : 0), 0);
-//     // number of possible winning line for O
-//     let score_O = winCombos.reduce((acc, combo) => acc + (combo.filter(val => pos_X.indexOf(val) !== -1).length === 0 ? 1 : 0), 0);
-//
-//     return score_X - score_O;
-// }
 
 /**
  * The heuristic evaluation function for the given line of 3 cells
@@ -423,7 +388,6 @@ function minimax(board, player, depth, alpha, beta) {
                 board[i] = i;
 
                 // prune with alpha, beta
-                // Alpha should be updated with best, not val
                 alpha = Math.max(alpha, best);
                 if (beta <= alpha) {
                     break;
@@ -453,7 +417,6 @@ function minimax(board, player, depth, alpha, beta) {
                 board[i] = i;
 
                 // prune with alpha, beta
-                // Beta should be updated with best, not val
                 beta = Math.min(beta, best);
                 if (beta <= alpha) {
                     break;
