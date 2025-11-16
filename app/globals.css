@@ -1,0 +1,307 @@
+@import url('../css/raleway.css');
+@import url('../css/fontello.css');
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Raleway", Arial, sans-serif;
+  background-color: #252525;
+  color: #BE8B64;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-bottom: 3px solid #BE8B64;
+  font-size: 35px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  position: relative;
+  padding: 20px;
+}
+
+.game-container {
+  display: flex;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.game-board {
+  display: grid;
+  gap: 6px;
+  background-color: #1D1D1D;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.cell {
+  width: 150px;
+  height: 150px;
+  background-color: #252525;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 100px;
+  font-weight: bold;
+  border: none;
+  cursor: default;
+  transition: background-color 0.2s;
+}
+
+.cell.clickable {
+  cursor: pointer;
+}
+
+.cell.clickable:hover {
+  background-color: #2d2d2d;
+}
+
+.cell.winning {
+  background-color: #414141;
+}
+
+.cell .symbol {
+  display: block;
+}
+
+.cell .symbol.x {
+  color: #3FC0E0;
+}
+
+.cell .symbol.o {
+  color: #E95151;
+}
+
+.menu {
+  margin: 0 auto;
+  width: 400px;
+  font-size: 30px;
+  text-align: center;
+}
+
+.menu button {
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 26px;
+  color: #252525;
+  background-color: #BE8B64;
+  margin: 0 5px;
+  padding: 8px 16px;
+  transition: background-color 0.2s;
+}
+
+.menu button:hover {
+  background-color: #EFEBE1;
+}
+
+.menu i {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.menu i:hover {
+  color: #EFEBE1;
+}
+
+.popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  min-height: 220px;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 2em;
+  background-color: rgba(56, 50, 50, 0.95);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  z-index: 1000;
+}
+
+.select-sym {
+  display: flex;
+}
+
+.select-sym p {
+  margin: 0 0 15px 0;
+  font-size: 1.2em;
+}
+
+.symbol-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.select-sym button,
+.icon-x,
+.icon-o {
+  font-size: 50px;
+  width: 70px;
+  height: 70px;
+  border: 0;
+  border-radius: 10px;
+  background-color: #252525;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-sym button:hover,
+.icon-x:hover,
+.icon-o:hover {
+  background: #EFEBE1;
+}
+
+.icon-x {
+  color: #3FC0E0;
+}
+
+.icon-o {
+  color: #E95151;
+}
+
+.endgame {
+  display: flex;
+}
+
+.endgame .text {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.icon-reset {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #252525;
+  font-size: 50px;
+  padding: 8px;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.icon-reset:hover {
+  background-color: rgba(239, 235, 225, 0.1);
+}
+
+.icon-reset i {
+  font-size: 50px;
+  color: #252525;
+  display: inline-block;
+}
+
+.icon-reset:hover i {
+  color: #252525;
+}
+
+/* AI Thinking Panel */
+.ai-thinking-panel {
+  flex: 0 0 350px;
+  background-color: rgba(56, 50, 50, 0.8);
+  border-radius: 10px;
+  padding: 20px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.ai-thinking-panel h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.5em;
+  color: #BE8B64;
+  border-bottom: 2px solid #BE8B64;
+  padding-bottom: 10px;
+}
+
+.thinking-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.thinking-text {
+  margin: 0;
+  color: #EFEBE1;
+}
+
+.thinking-line {
+  margin: 4px 0;
+  padding: 2px 0;
+}
+
+.thinking-line-empty {
+  height: 8px;
+}
+
+.thinking-text strong {
+  color: #BE8B64;
+  font-weight: 600;
+}
+
+.no-data {
+  color: #BE8B64;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .game-container {
+    flex-direction: column;
+  }
+
+  .ai-thinking-panel {
+    flex: 1;
+    width: 100%;
+    max-height: 400px;
+  }
+
+  .cell {
+    width: 100px;
+    height: 100px;
+    font-size: 70px;
+  }
+
+  .header {
+    font-size: 28px;
+  }
+}
+
