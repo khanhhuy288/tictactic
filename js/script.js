@@ -391,17 +391,13 @@ function evaluateLine(board, cellId1, cellId2, cellId3) {
 function minimax(board, player, depth, alpha, beta) {
     numNodes++;
 
-    // evaluate the current position
-    let score = evaluate(board);
-
-    // ai player wins
-    if (score > 0) {
-        return score - depth;
+    // Check for terminal states first - actual wins
+    if (checkWin(board, aiPlayer)) {
+        return 100 - depth; // AI wins, prefer shorter paths
     }
-
-    // human player wins
-    if (score < 0) {
-        return score + depth;
+    
+    if (checkWin(board, huPlayer)) {
+        return -100 + depth; // Human wins, prefer shorter paths
     }
 
     // a tie
@@ -427,7 +423,8 @@ function minimax(board, player, depth, alpha, beta) {
                 board[i] = i;
 
                 // prune with alpha, beta
-                alpha = Math.max(alpha, val);
+                // Alpha should be updated with best, not val
+                alpha = Math.max(alpha, best);
                 if (beta <= alpha) {
                     break;
                 }
@@ -456,88 +453,8 @@ function minimax(board, player, depth, alpha, beta) {
                 board[i] = i;
 
                 // prune with alpha, beta
-                beta = Math.min(beta, val);
-                if (beta <= alpha) {
-                    break;
-                }
-            }
-        }
-
-        return best;
-    }
-}
-
-function minimaxLimitedDepth(board, player, depth, maxDepth, alpha, beta) {
-    numNodes++;
-    // evaluate the current position
-    let score = evaluate(board);
-
-    // base cases
-    // maxDepth reached
-    if (depth >= maxDepth) {
-        return score;
-    }
-    // ai player wins
-    if (score > 0) {
-        return score - depth;
-    }
-    // human player wins
-    if (score < 0) {
-        return score + depth;
-    }
-    // a tie
-    if (!moveLeft(board)) {
-        return 0;
-    }
-
-    // ai player is the maximizer
-    if (player === aiPlayer) {
-        let best = -Infinity;
-        let val;
-        for (let [i, elem] of board.entries()) {
-            if (typeof elem === 'number') {
-                // make the move
-                board[i] = player;
-
-                // call minimax recursively and choose
-                // the maximum value
-                val = minimaxLimitedDepth(board, huPlayer, depth + 1, maxDepth, alpha, beta);
-                best = Math.max(best, val);
-
-                // undo the move
-                board[i] = i;
-
-                // prune with alpha, beta
-                alpha = Math.max(alpha, val);
-                if (beta <= alpha) {
-                    break;
-                }
-            }
-        }
-
-        return best;
-    }
-
-    // hu player is the minimizer
-    else {
-        let best = +Infinity;
-        let val;
-
-        for (let [i, elem] of board.entries()) {
-            if (typeof elem === 'number') {
-                // make the move
-                board[i] = player;
-
-                // call minimax recursively and choose
-                // the minimum value
-                val = minimaxLimitedDepth(board, aiPlayer, depth + 1, maxDepth, alpha, beta);
-                best = Math.min(best, val);
-
-                // undo the move
-                board[i] = i;
-
-                // prune with alpha, beta
-                beta = Math.min(beta, val);
+                // Beta should be updated with best, not val
+                beta = Math.min(beta, best);
                 if (beta <= alpha) {
                     break;
                 }
@@ -564,9 +481,8 @@ function findBestMove(board) {
             board[i] = aiPlayer;
 
             // call minimax recursively and choose
-            // the minimum value
-            // let moveVal = minimax(board, huPlayer, 0, -Infinity, Infinity);
-            let moveVal = minimaxLimitedDepth(board, huPlayer, 0, 3, -Infinity, Infinity);
+            // the maximum value
+            let moveVal = minimax(board, huPlayer, 0, -Infinity, Infinity);
 
             // undo the move
             board[i] = i;
