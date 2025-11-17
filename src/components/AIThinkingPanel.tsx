@@ -6,16 +6,14 @@ import { formatThinkingData } from '@/lib/ai/thinking';
 interface AIThinkingPanelProps {
   thinkingData: ThinkingData | null;
   gridSize?: number;
+  totalNodesEvaluated?: number;
+  totalBranchesPruned?: number;
+  totalSearchTime?: number;
 }
 
 function formatTextWithMarkdown(text: string): React.ReactNode[] {
   const lines = text.split('\n');
   return lines.map((line, index) => {
-    // Detect indentation level (count leading spaces, 2 spaces = 1 level)
-    const leadingSpaces = line.match(/^(\s*)/)?.[1].length || 0;
-    const indentLevel = Math.floor(leadingSpaces / 2);
-    const indentClass = indentLevel > 0 ? `thinking-indent-${indentLevel}` : '';
-    
     // Handle bold text (**text**)
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
@@ -41,19 +39,21 @@ function formatTextWithMarkdown(text: string): React.ReactNode[] {
       parts.push(line);
     }
     
-    const className = line.trim() === '' 
-      ? 'thinking-line-empty' 
-      : `thinking-line ${indentClass}`.trim();
-    
     return (
-      <div key={index} className={className} style={indentLevel > 0 ? { paddingLeft: `${indentLevel * 20}px` } : undefined}>
+      <div key={index} className={line.trim() === '' ? 'thinking-line-empty' : 'thinking-line'}>
         {parts}
       </div>
     );
   });
 }
 
-export default function AIThinkingPanel({ thinkingData, gridSize = 3 }: AIThinkingPanelProps) {
+export default function AIThinkingPanel({ 
+  thinkingData, 
+  gridSize = 3,
+  totalNodesEvaluated,
+  totalBranchesPruned,
+  totalSearchTime
+}: AIThinkingPanelProps) {
   if (!thinkingData) {
     return (
       <div className="ai-thinking-panel">
@@ -66,7 +66,7 @@ export default function AIThinkingPanel({ thinkingData, gridSize = 3 }: AIThinki
     );
   }
 
-  const formattedText = formatThinkingData(thinkingData, gridSize);
+  const formattedText = formatThinkingData(thinkingData, gridSize, totalNodesEvaluated, totalBranchesPruned, totalSearchTime);
   const formattedContent = formatTextWithMarkdown(formattedText);
   const pruningEfficiency = ((thinkingData.branchesPruned / (thinkingData.nodesEvaluated + thinkingData.branchesPruned)) * 100);
 

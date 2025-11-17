@@ -19,10 +19,14 @@ interface MinimaxContext {
   };
   moveEvaluations: Map<number, MoveEvaluation>;
   currentMoveEvaluation: MoveEvaluation | null;
+  // Per-root-move tracking
+  rootMoveNodes: number; // Nodes visited for current root move
+  rootMoveMaxDepth: number; // Max depth reached for current root move
+  rootMoveStartNodes: number; // Starting node count when root move evaluation begins
 }
 
 /**
- * Minimax algorithm with alpha-beta pruning.
+ * Minimax algorithm with optional alpha-beta pruning.
  * @param board The current board state.
  * @param player The current player (maximizer or minimizer).
  * @param aiPlayer The AI player symbol.
@@ -31,6 +35,7 @@ interface MinimaxContext {
  * @param alpha Best score for the maximizer (AI).
  * @param beta Best score for the minimizer (Human).
  * @param context Context object for tracking thinking data.
+ * @param useAlphaBetaPruning Whether to use alpha-beta pruning.
  * @returns Evaluation score of the board position.
  */
 export function minimax(
@@ -41,10 +46,15 @@ export function minimax(
   depth: number,
   alpha: number,
   beta: number,
-  context: MinimaxContext
+  context: MinimaxContext,
+  useAlphaBetaPruning: boolean = true
 ): number {
   context.nodesEvaluated++;
   context.maxDepth = Math.max(context.maxDepth, depth);
+  // Track max depth for current root move
+  if (context.currentMoveEvaluation) {
+    context.rootMoveMaxDepth = Math.max(context.rootMoveMaxDepth, depth);
+  }
 
   // Check for terminal states - actual wins
   const aiWin = checkWin(board, aiPlayer, GRID_SIZE);
@@ -102,7 +112,7 @@ export function minimax(
         context.currentMoveEvaluation = moveEval;
 
         // Call minimax recursively
-        val = minimax(board, humanPlayer, aiPlayer, humanPlayer, depth + 1, alpha, beta, context);
+        val = minimax(board, humanPlayer, aiPlayer, humanPlayer, depth + 1, alpha, beta, context, useAlphaBetaPruning);
         best = Math.max(best, val);
         moveEval.score = val;
 
@@ -110,24 +120,31 @@ export function minimax(
         board[i] = originalValue;
 
         // Alpha-beta pruning
-        alpha = Math.max(alpha, best);
-        if (beta <= alpha) {
-          context.branchesPruned++;
-          moveEval.pruned = true;
-          // Mark remaining moves as pruned
-          for (let j = i + 1; j < board.length; j++) {
-            if (typeof board[j] === 'number') {
-              const prunedEval: MoveEvaluation = {
-                position: j,
-                score: 0,
-                depth,
-                outcome: 'unknown',
-                pruned: true,
-              };
-              context.moveEvaluations.set(j, prunedEval);
+        if (useAlphaBetaPruning) {
+          alpha = Math.max(alpha, best);
+          if (beta <= alpha) {
+            context.branchesPruned++;
+            moveEval.pruned = true;
+            // Record pruning depth (depth at which pruning occurred)
+            if (context.currentMoveEvaluation) {
+              context.currentMoveEvaluation.pruningDepth = depth;
             }
+            // Mark remaining moves as pruned
+            for (let j = i + 1; j < board.length; j++) {
+              if (typeof board[j] === 'number') {
+                const prunedEval: MoveEvaluation = {
+                  position: j,
+                  score: 0,
+                  depth,
+                  outcome: 'unknown',
+                  pruned: true,
+                  pruningDepth: depth, // Pruned at root level
+                };
+                context.moveEvaluations.set(j, prunedEval);
+              }
+            }
+            break;
           }
-          break;
         }
       }
     }
@@ -155,7 +172,7 @@ export function minimax(
         context.currentMoveEvaluation = moveEval;
 
         // Call minimax recursively
-        val = minimax(board, aiPlayer, aiPlayer, humanPlayer, depth + 1, alpha, beta, context);
+        val = minimax(board, aiPlayer, aiPlayer, humanPlayer, depth + 1, alpha, beta, context, useAlphaBetaPruning);
         best = Math.min(best, val);
         moveEval.score = val;
 
@@ -163,24 +180,31 @@ export function minimax(
         board[i] = originalValue;
 
         // Alpha-beta pruning
-        beta = Math.min(beta, best);
-        if (beta <= alpha) {
-          context.branchesPruned++;
-          moveEval.pruned = true;
-          // Mark remaining moves as pruned
-          for (let j = i + 1; j < board.length; j++) {
-            if (typeof board[j] === 'number') {
-              const prunedEval: MoveEvaluation = {
-                position: j,
-                score: 0,
-                depth,
-                outcome: 'unknown',
-                pruned: true,
-              };
-              context.moveEvaluations.set(j, prunedEval);
+        if (useAlphaBetaPruning) {
+          beta = Math.min(beta, best);
+          if (beta <= alpha) {
+            context.branchesPruned++;
+            moveEval.pruned = true;
+            // Record pruning depth (depth at which pruning occurred)
+            if (context.currentMoveEvaluation) {
+              context.currentMoveEvaluation.pruningDepth = depth;
             }
+            // Mark remaining moves as pruned
+            for (let j = i + 1; j < board.length; j++) {
+              if (typeof board[j] === 'number') {
+                const prunedEval: MoveEvaluation = {
+                  position: j,
+                  score: 0,
+                  depth,
+                  outcome: 'unknown',
+                  pruned: true,
+                  pruningDepth: depth, // Pruned at root level
+                };
+                context.moveEvaluations.set(j, prunedEval);
+              }
+            }
+            break;
           }
-          break;
         }
       }
     }
@@ -194,12 +218,14 @@ export function minimax(
  * @param board The current board state.
  * @param aiPlayer The AI player symbol.
  * @param humanPlayer The human player symbol.
+ * @param useAlphaBetaPruning Whether to use alpha-beta pruning.
  * @returns Object containing the best move index and thinking data.
  */
 export function findBestMoveWithThinking(
   board: Board,
   aiPlayer: Player,
-  humanPlayer: Player
+  humanPlayer: Player,
+  useAlphaBetaPruning: boolean = true
 ): { move: number; thinking: ThinkingData } {
   const startTime = performance.now();
   
@@ -214,6 +240,9 @@ export function findBestMoveWithThinking(
     },
     moveEvaluations: new Map(),
     currentMoveEvaluation: null,
+    rootMoveNodes: 0,
+    rootMoveMaxDepth: 0,
+    rootMoveStartNodes: 0,
   };
 
   let bestVal = -Infinity;
@@ -227,15 +256,19 @@ export function findBestMoveWithThinking(
       const originalValue = board[i];
       board[i] = aiPlayer;
 
-      // Reset move evaluation tracking
+      // Reset move evaluation tracking and per-move statistics
       context.currentMoveEvaluation = null;
+      context.rootMoveStartNodes = context.nodesEvaluated;
+      context.rootMoveMaxDepth = 0;
+      
       const moveEval: MoveEvaluation = {
         position: i,
         score: 0,
-        depth: context.maxDepth, // Will be updated after search
+        depth: 0,
         outcome: 'unknown',
         pruned: false,
       };
+      context.currentMoveEvaluation = moveEval;
 
       // Call minimax
       const moveVal = minimax(
@@ -246,12 +279,17 @@ export function findBestMoveWithThinking(
         0,
         -Infinity,
         Infinity,
-        context
+        context,
+        useAlphaBetaPruning
       );
+
+      // Calculate per-move statistics
+      moveEval.nodesVisited = context.nodesEvaluated - context.rootMoveStartNodes;
+      moveEval.maxDepthReached = context.rootMoveMaxDepth;
 
       // Store evaluation
       moveEval.score = moveVal;
-      moveEval.depth = context.maxDepth; // Update with actual max depth reached
+      moveEval.depth = context.rootMoveMaxDepth;
       // Determine outcome from score
       if (moveVal > 50) {
         moveEval.outcome = 'win';
@@ -279,6 +317,10 @@ export function findBestMoveWithThinking(
   const endTime = performance.now();
   const searchTime = endTime - startTime;
 
+  // Extract principal variation (simplified: just the chosen move for now)
+  // TODO: Enhance to track full PV during search
+  const principalVariation: number[] = bestMove >= 0 ? [bestMove] : [];
+
   const thinking: ThinkingData = {
     chosenMove: bestMove,
     chosenScore: bestVal,
@@ -288,6 +330,7 @@ export function findBestMoveWithThinking(
     maxDepth: context.maxDepth,
     terminalStatesFound: context.terminalStates,
     searchTime,
+    principalVariation,
   };
 
   return { move: bestMove, thinking };

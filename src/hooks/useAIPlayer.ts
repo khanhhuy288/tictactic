@@ -5,10 +5,10 @@ import type { Player, Board } from '@/lib/game/types';
 import type { ThinkingData } from '@/lib/ai/thinking';
 import { AIPlayer } from '@/lib/ai/aiPlayer';
 
-export function useAIPlayer(gridSize: number = 3) {
+export function useAIPlayer(gridSize: number = 3, useAlphaBetaPruning: boolean = true) {
   const [thinkingData, setThinkingData] = useState<ThinkingData | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const aiPlayer = useMemo(() => new AIPlayer(gridSize), [gridSize]);
+  const aiPlayer = useMemo(() => new AIPlayer(gridSize, useAlphaBetaPruning), [gridSize, useAlphaBetaPruning]);
 
   const calculateMove = useCallback(
     async (board: Board, aiPlayerSymbol: Player, humanPlayerSymbol: Player) => {

@@ -9,9 +9,11 @@ const GRID_SIZE = 3;
  */
 export class AIPlayer {
   private gridSize: number;
+  private useAlphaBetaPruning: boolean;
 
-  constructor(gridSize: number = GRID_SIZE) {
+  constructor(gridSize: number = GRID_SIZE, useAlphaBetaPruning: boolean = true) {
     this.gridSize = gridSize;
+    this.useAlphaBetaPruning = useAlphaBetaPruning;
   }
 
   /**
@@ -28,7 +30,7 @@ export class AIPlayer {
   ): { move: number; thinking: ThinkingData } {
     // For 3×3, use perfect minimax
     if (this.gridSize === 3) {
-      return findBestMoveWithThinking(board, aiPlayer, humanPlayer);
+      return findBestMoveWithThinking(board, aiPlayer, humanPlayer, this.useAlphaBetaPruning);
     }
 
     // For larger grids (4×4+), would use heuristic evaluation

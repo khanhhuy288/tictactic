@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Tic Tac Toe AI',
+  title: 'Tic Tactic',
   description: 'Play Tic Tac Toe against an unbeatable AI',
 };
 
