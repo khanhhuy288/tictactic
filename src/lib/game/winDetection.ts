@@ -36,7 +36,7 @@ export function checkWin(
   const winCombos = getWinCombos(gridSize, winLength);
 
   // Check if player's moves match any win combination
-  for (const [index, winCombo] of winCombos.entries()) {
+  for (const winCombo of winCombos) {
     if (match(winCombo, moves)) {
       return {
         winner: player,
@@ -52,10 +52,9 @@ export function checkWin(
 /**
  * Check if the game is a tie (board is full and no winner).
  * @param board The board to check.
- * @param gridSize The size of the grid (default: 3).
  * @returns True if the game is a tie.
  */
-export function checkTie(board: Board, gridSize: number = 3): boolean {
+export function checkTie(board: Board): boolean {
   return !hasEmptyCells(board);
 }
 

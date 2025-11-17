@@ -72,7 +72,6 @@ export default function AIThinkingPanel({
 
   const formattedText = formatThinkingData(thinkingData, gridSize, totalNodesEvaluated, totalBranchesPruned, totalSearchTime);
   const formattedContent = formatTextWithMarkdown(formattedText);
-  const pruningEfficiency = ((thinkingData.branchesPruned / (thinkingData.nodesEvaluated + thinkingData.branchesPruned)) * 100);
 
   return (
     <div className={panelClassName}>

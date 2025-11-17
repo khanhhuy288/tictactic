@@ -43,7 +43,6 @@ function evaluateLine(
 ): number {
   let aiCount = 0;
   let humanCount = 0;
-  let emptyCount = 0;
 
   // Count pieces in this line
   for (const cellIndex of line) {
@@ -51,8 +50,6 @@ function evaluateLine(
       aiCount++;
     } else if (board[cellIndex] === humanPlayer) {
       humanCount++;
-    } else {
-      emptyCount++;
     }
   }
 

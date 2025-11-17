@@ -49,7 +49,7 @@ export function useGame(gridSize: number = 3) {
           };
         }
 
-        if (checkTie(newBoard, gridSize)) {
+        if (checkTie(newBoard)) {
           result = { winner: null, winningCells: null, isTie: true };
           return {
             ...prev,
@@ -100,7 +100,7 @@ export function useGame(gridSize: number = 3) {
           };
         }
 
-        if (checkTie(newBoard, gridSize)) {
+        if (checkTie(newBoard)) {
           result = { winner: null, winningCells: null, isTie: true };
           return {
             ...prev,

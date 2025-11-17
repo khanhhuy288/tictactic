@@ -37,12 +37,12 @@ describe('winDetection', () => {
   describe('checkTie', () => {
     it('should return true when board is full and no winner', () => {
       const board: Board = ['X', 'O', 'X', 'O', 'X', 'O', 'O', 'X', 'O'];
-      expect(checkTie(board, 3)).toBe(true);
+      expect(checkTie(board)).toBe(true);
     });
 
     it('should return false when board has empty cells', () => {
       const board: Board = ['X', 'O', 'X', 3, 4, 5, 6, 7, 8];
-      expect(checkTie(board, 3)).toBe(false);
+      expect(checkTie(board)).toBe(false);
     });
   });
 });
