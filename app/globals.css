@@ -407,8 +407,8 @@ body {
 }
 
 .thinking-line {
-  margin: 4px 0;
-  padding: 2px 0;
+  white-space: pre-wrap;
+  display: block;
 }
 
 .thinking-line-empty {
@@ -502,8 +502,7 @@ body {
 }
 
 .overlay-toggle {
-  margin: 12px 0;
-  padding-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .toggle-switch.compact {
@@ -608,7 +607,7 @@ body {
   flex-direction: row;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   padding: 12px 16px;
   background-color: rgba(56, 50, 50, 0.6);
   border-radius: 8px;

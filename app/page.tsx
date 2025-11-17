@@ -35,14 +35,17 @@ export default function Home() {
   const [totalBranchesPruned, setTotalBranchesPruned] = useState(0);
   const [totalSearchTime, setTotalSearchTime] = useState(0);
   
-  // Reset game and clear thinking data when gridSize changes
-  useEffect(() => {
+  const handleGridSizeChange = (size: number) => {
+    if (size === gridSize) {
+      return;
+    }
+    setGridSize(size);
     clearThinking();
     setTotalNodesEvaluated(0);
     setTotalBranchesPruned(0);
     setTotalSearchTime(0);
-    // Game reset is handled by useGame hook's useEffect
-  }, [gridSize, clearThinking]);
+    reset(size);
+  };
   
   // Handle AI's first move when AI is X
   useEffect(() => {
@@ -176,7 +179,7 @@ export default function Home() {
 
           {showThinkingPanel && (
             <div className="sidebar-panel">
-              <ModeSelector gridSize={gridSize} onGridSizeChange={setGridSize} />
+              <ModeSelector gridSize={gridSize} onGridSizeChange={handleGridSizeChange} />
               <div className="overlay-toggle">
                 <label className="toggle-switch compact">
                   <input

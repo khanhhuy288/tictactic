@@ -8,8 +8,8 @@ describe('winCombos', () => {
       
       // Check first row
       expect(combos[0]).toEqual([0, 1, 2]);
-      // Check first column
-      expect(combos[1]).toEqual([0, 3, 6]);
+      // Check first column (order independent)
+      expect(combos).toContainEqual([0, 3, 6]);
       // Check diagonal
       expect(combos[6]).toEqual([0, 4, 8]);
     });
@@ -20,8 +20,8 @@ describe('winCombos', () => {
       
       // Check first row
       expect(combos[0]).toEqual([0, 1, 2, 3]);
-      // Check first column
-      expect(combos[1]).toEqual([0, 4, 8, 12]);
+      // Check first column (order independent)
+      expect(combos).toContainEqual([0, 4, 8, 12]);
     });
   });
 });

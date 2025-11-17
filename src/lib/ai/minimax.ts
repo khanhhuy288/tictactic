@@ -291,10 +291,20 @@ export function findBestMoveWithThinking(
   const endTime = performance.now();
   const searchTime = endTime - startTime;
 
+  const isOpeningBoard = board.every((cell) => typeof cell === 'number');
+  const cornerIndices =
+    gridSize === 3 ? [0, gridSize - 1, gridSize * (gridSize - 1), gridSize * gridSize - 1] : [];
+  const preferredMoves =
+    isOpeningBoard && cornerIndices.length > 0
+      ? bestMoves.filter((move) => cornerIndices.includes(move))
+      : [];
+  const selectionPool = preferredMoves.length > 0 ? preferredMoves : bestMoves;
+
   // Extract principal variation (simplified: just the chosen move for now)
   // TODO: Enhance to track full PV during search
-  const randomIndex = bestMoves.length > 0 ? Math.floor(Math.random() * bestMoves.length) : -1;
-  const chosenMove = randomIndex >= 0 ? bestMoves[randomIndex] : -1;
+  const randomIndex =
+    selectionPool.length > 0 ? Math.floor(Math.random() * selectionPool.length) : -1;
+  const chosenMove = randomIndex >= 0 ? selectionPool[randomIndex] : -1;
 
   const principalVariation: number[] = chosenMove >= 0 ? [chosenMove] : [];
 
