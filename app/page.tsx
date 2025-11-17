@@ -471,7 +471,7 @@ export default function Home() {
           </div>
 
           {showThinkingPanel && (
-            <div>
+            <div className="sidebar-panel">
               <ModeSelector gridSize={gridSize} onGridSizeChange={setGridSize} />
               <AIThinkingPanel 
                 thinkingData={thinkingData} 
