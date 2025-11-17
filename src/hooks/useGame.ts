@@ -1,15 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Player, GameState, GameResult } from '@/lib/game/types';
 import { createGameState, setPlayers, resetGameState } from '@/lib/game/gameState';
 import { makeMove } from '@/lib/game/board';
 import { checkWin, checkTie } from '@/lib/game/winDetection';
 
-const GRID_SIZE = 3;
+export function useGame(gridSize: number = 3) {
+  const [gameState, setGameState] = useState<GameState>(() => createGameState(gridSize));
 
-export function useGame() {
-  const [gameState, setGameState] = useState<GameState>(() => createGameState(GRID_SIZE));
+  // Reset game when gridSize changes
+  useEffect(() => {
+    setGameState((prev) => resetGameState(prev, gridSize));
+  }, [gridSize]);
 
   const selectSymbol = useCallback((player: Player) => {
     setGameState((prev) => {
@@ -33,7 +36,7 @@ export function useGame() {
         }
 
         const newBoard = makeMove(prev.board, index, prev.currentPlayer);
-        const winResult = checkWin(newBoard, prev.currentPlayer, GRID_SIZE);
+        const winResult = checkWin(newBoard, prev.currentPlayer, gridSize);
 
         if (winResult) {
           result = winResult;
@@ -46,7 +49,7 @@ export function useGame() {
           };
         }
 
-        if (checkTie(newBoard, GRID_SIZE)) {
+        if (checkTie(newBoard, gridSize)) {
           result = { winner: null, winningCells: null, isTie: true };
           return {
             ...prev,
@@ -66,7 +69,7 @@ export function useGame() {
 
       return result;
     },
-    []
+    [gridSize]
   );
 
   const makeAIMove = useCallback(
@@ -84,7 +87,7 @@ export function useGame() {
         }
 
         const newBoard = makeMove(prev.board, index, prev.currentPlayer);
-        const winResult = checkWin(newBoard, prev.currentPlayer, GRID_SIZE);
+        const winResult = checkWin(newBoard, prev.currentPlayer, gridSize);
 
         if (winResult) {
           result = winResult;
@@ -97,7 +100,7 @@ export function useGame() {
           };
         }
 
-        if (checkTie(newBoard, GRID_SIZE)) {
+        if (checkTie(newBoard, gridSize)) {
           result = { winner: null, winningCells: null, isTie: true };
           return {
             ...prev,
@@ -116,12 +119,12 @@ export function useGame() {
 
       return result;
     },
-    []
+    [gridSize]
   );
 
   const reset = useCallback(() => {
-    setGameState((prev) => resetGameState(prev, GRID_SIZE));
-  }, []);
+    setGameState((prev) => resetGameState(prev, gridSize));
+  }, [gridSize]);
 
   const isHumanTurn = gameState.status === 'playing' && gameState.currentPlayer === gameState.humanPlayer;
   const isAITurn = gameState.status === 'playing' && gameState.currentPlayer === gameState.aiPlayer;
@@ -134,7 +137,7 @@ export function useGame() {
     reset,
     isHumanTurn,
     isAITurn,
-    gridSize: GRID_SIZE,
+    gridSize,
   };
 }
 

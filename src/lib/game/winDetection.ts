@@ -31,7 +31,9 @@ export function checkWin(
   );
 
   // Get win combinations for this grid size
-  const winCombos = getWinCombos(gridSize);
+  // For 3x3: winLength = 3, for 4x4: winLength = 4
+  const winLength = gridSize;
+  const winCombos = getWinCombos(gridSize, winLength);
 
   // Check if player's moves match any win combination
   for (const [index, winCombo] of winCombos.entries()) {
