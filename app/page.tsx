@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame } from '@/hooks/useGame';
 import { useAIPlayer } from '@/hooks/useAIPlayer';
 import GameBoard from '@/components/GameBoard';
@@ -23,6 +23,7 @@ export default function Home() {
 
   const { calculateMove, getRandomCornerMove, thinkingData, clearThinking } = useAIPlayer(gridSize);
   const isProcessingAIMove = useRef(false);
+  const [showThinkingPanel, setShowThinkingPanel] = useState(true);
 
   // Handle AI's first move when AI is X
   useEffect(() => {
@@ -96,7 +97,18 @@ export default function Home() {
 
   return (
     <div className="container">
-      <div className="header">TIC TAC TOE</div>
+      <div className="header">
+        <span>TIC TAC TOE</span>
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            checked={showThinkingPanel}
+            onChange={(e) => setShowThinkingPanel(e.target.checked)}
+          />
+          <span className="toggle-slider"></span>
+          <span className="toggle-label">Show AI Thinking</span>
+        </label>
+      </div>
       
       <div className="content">
         <div className="game-container">
@@ -112,7 +124,9 @@ export default function Home() {
             <ResetButton onReset={handleReset} />
           </div>
 
-          <AIThinkingPanel thinkingData={thinkingData} gridSize={gridSize} />
+          {showThinkingPanel && (
+            <AIThinkingPanel thinkingData={thinkingData} gridSize={gridSize} />
+          )}
         </div>
 
         {showSymbolSelector && <SymbolSelector onSelect={selectSymbol} />}
