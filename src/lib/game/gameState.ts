@@ -1,4 +1,4 @@
-import type { GameState, Player, Board } from './types';
+import type { GameState, Player } from './types';
 import { createBoard } from './board';
 
 const DEFAULT_GRID_SIZE = 3;

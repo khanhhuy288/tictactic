@@ -8,10 +8,8 @@ import SymbolSelector from '@/components/SymbolSelector';
 import GameOverModal from '@/components/GameOverModal';
 import ResetButton from '@/components/ResetButton';
 import AIThinkingPanel from '@/components/AIThinkingPanel';
-import ReplayCaption from '@/components/ReplayCaption';
-import ReplayControls from '@/components/ReplayControls';
 import ModeSelector from '@/components/ModeSelector';
-import { generateReplaySteps, type ReplayStep } from '@/lib/ai/thinking';
+import { getMoveEvaluationMap } from '@/lib/ai/thinking';
 
 export default function Home() {
   const [gridSize, setGridSize] = useState(3);
@@ -29,44 +27,23 @@ export default function Home() {
   const isProcessingAIMove = useRef(false);
   const [showThinkingPanel, setShowThinkingPanel] = useState(true);
   const [useAlphaBetaPruning, setUseAlphaBetaPruning] = useState(true);
+  const [showStatsOverlay, setShowStatsOverlay] = useState(true);
   const { calculateMove, getRandomCornerMove, thinkingData, clearThinking } = useAIPlayer(gridSize, useAlphaBetaPruning);
 
-  // Reset game and clear thinking data when gridSize changes
-  useEffect(() => {
-    clearThinking();
-    setReplaySteps([]);
-    setCurrentReplayStep(null);
-    setIsReplaying(false);
-    setIsAutoPlaying(false);
-    isAutoPlayingRef.current = false;
-    setReplayPhase(null);
-    setCurrentPVStep(null);
-    setTotalNodesEvaluated(0);
-    setTotalBranchesPruned(0);
-    setTotalSearchTime(0);
-    if (replayTimeoutRef.current) {
-      clearTimeout(replayTimeoutRef.current);
-      replayTimeoutRef.current = null;
-    }
-    // Game reset is handled by useGame hook's useEffect
-  }, [gridSize, clearThinking]);
-  
   // Cumulative statistics tracking
   const [totalNodesEvaluated, setTotalNodesEvaluated] = useState(0);
   const [totalBranchesPruned, setTotalBranchesPruned] = useState(0);
   const [totalSearchTime, setTotalSearchTime] = useState(0);
   
-  // Replay state
-  const [isReplayToggled, setIsReplayToggled] = useState(false);
-  const [replaySteps, setReplaySteps] = useState<ReplayStep[]>([]);
-  const [currentReplayStep, setCurrentReplayStep] = useState<number | null>(null);
-  const [isReplaying, setIsReplaying] = useState(false);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-  const [replayPhase, setReplayPhase] = useState<'root' | 'pv' | null>(null);
-  const [currentPVStep, setCurrentPVStep] = useState<number | null>(null);
-  const replayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isAutoPlayingRef = useRef(false);
-
+  // Reset game and clear thinking data when gridSize changes
+  useEffect(() => {
+    clearThinking();
+    setTotalNodesEvaluated(0);
+    setTotalBranchesPruned(0);
+    setTotalSearchTime(0);
+    // Game reset is handled by useGame hook's useEffect
+  }, [gridSize, clearThinking]);
+  
   // Handle AI's first move when AI is X
   useEffect(() => {
     if (
@@ -118,270 +95,30 @@ export default function Home() {
     }
   };
 
-  // Generate replay steps when thinking data changes and update cumulative statistics
+  // Update cumulative statistics when thinking data changes
   useEffect(() => {
     if (thinkingData) {
-      const steps = generateReplaySteps(thinkingData);
-      setReplaySteps(steps);
-      
       // Update cumulative statistics
       setTotalNodesEvaluated(prev => prev + thinkingData.nodesEvaluated);
       setTotalBranchesPruned(prev => prev + thinkingData.branchesPruned);
       if (thinkingData.searchTime !== undefined) {
         setTotalSearchTime(prev => prev + thinkingData.searchTime!);
       }
-    } else {
-      setReplaySteps([]);
-    }
-    // Reset replay state when thinking data changes
-    setCurrentReplayStep(null);
-    setIsReplaying(false);
-    setIsAutoPlaying(false);
-    isAutoPlayingRef.current = false;
-    setReplayPhase(null);
-    setCurrentPVStep(null);
-    if (replayTimeoutRef.current) {
-      clearTimeout(replayTimeoutRef.current);
-      replayTimeoutRef.current = null;
     }
   }, [thinkingData]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (replayTimeoutRef.current) {
-        clearTimeout(replayTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleReplayToggle = () => {
-    const newToggledState = !isReplayToggled;
-    setIsReplayToggled(newToggledState);
-    
-    // When toggling off, reset replay state
-    if (!newToggledState) {
-      setIsReplaying(false);
-      setCurrentReplayStep(null);
-      setIsAutoPlaying(false);
-      isAutoPlayingRef.current = false;
-      setReplayPhase(null);
-      setCurrentPVStep(null);
-      if (replayTimeoutRef.current) {
-        clearTimeout(replayTimeoutRef.current);
-        replayTimeoutRef.current = null;
-      }
-    }
-  };
-
-  const handleReplayStart = () => {
-    if (replaySteps.length === 0 || !thinkingData) return;
-
-    setIsReplaying(true);
-    setCurrentReplayStep(0);
-    setReplayPhase('root');
-    setCurrentPVStep(null);
-    setIsAutoPlaying(false);
-  };
-
-  const handleReplayPrevious = () => {
-    if (!isReplaying) return;
-
-    if (replayPhase === 'pv' && currentPVStep !== null) {
-      // In PV phase
-      if (currentPVStep > 0) {
-        setCurrentPVStep(currentPVStep - 1);
-      } else {
-        // Go back to last root step
-        setReplayPhase('root');
-        setCurrentReplayStep(replaySteps.length - 1);
-        setCurrentPVStep(null);
-      }
-    } else if (replayPhase === 'root' && currentReplayStep !== null) {
-      // In root phase
-      if (currentReplayStep > 0) {
-        setCurrentReplayStep(currentReplayStep - 1);
-      }
-    }
-    setIsAutoPlaying(false);
-    if (replayTimeoutRef.current) {
-      clearTimeout(replayTimeoutRef.current);
-      replayTimeoutRef.current = null;
-    }
-  };
-
-  const handleReplayNext = () => {
-    // If replay hasn't started, start it first
-    if (!isReplaying) {
-      handleReplayStart();
-      return;
-    }
-
-    if (replayPhase === 'pv' && currentPVStep !== null && thinkingData?.principalVariation) {
-      // In PV phase
-      if (currentPVStep < thinkingData.principalVariation.length - 1) {
-        setCurrentPVStep(currentPVStep + 1);
-      } else {
-        // PV complete, end replay
-        setIsReplaying(false);
-        setReplayPhase(null);
-        setCurrentPVStep(null);
-      }
-    } else if (replayPhase === 'root' && currentReplayStep !== null) {
-      // In root phase
-      if (currentReplayStep < replaySteps.length - 1) {
-        setCurrentReplayStep(currentReplayStep + 1);
-      } else {
-        // Root moves complete, start PV phase if available
-        if (thinkingData?.principalVariation && thinkingData.principalVariation.length > 1) {
-          setReplayPhase('pv');
-          setCurrentReplayStep(null);
-          setCurrentPVStep(0);
-        } else {
-          // No PV, end replay
-          setIsReplaying(false);
-          setReplayPhase(null);
-        }
-      }
-    }
-    setIsAutoPlaying(false);
-    if (replayTimeoutRef.current) {
-      clearTimeout(replayTimeoutRef.current);
-      replayTimeoutRef.current = null;
-    }
-  };
-
-  const handleToggleAutoPlay = () => {
-    // If replay hasn't started, start it first
-    if (!isReplaying) {
-      handleReplayStart();
-      // Then start auto-play
-      setIsAutoPlaying(true);
-      isAutoPlayingRef.current = true;
-      return;
-    }
-
-    if (isAutoPlaying) {
-      // Pause
-      setIsAutoPlaying(false);
-      isAutoPlayingRef.current = false;
-      if (replayTimeoutRef.current) {
-        clearTimeout(replayTimeoutRef.current);
-        replayTimeoutRef.current = null;
-      }
-    } else {
-      // Start auto-play (will be handled by useEffect)
-      setIsAutoPlaying(true);
-      isAutoPlayingRef.current = true;
-    }
-  };
-
-  // Auto-play effect
-  useEffect(() => {
-    if (!isAutoPlaying || !isReplaying || !thinkingData) {
-      if (replayTimeoutRef.current) {
-        clearTimeout(replayTimeoutRef.current);
-        replayTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    // Phase 1: Root moves
-    const animateRootStep = (stepIndex: number) => {
-      if (!isAutoPlayingRef.current) return; // Stop if auto-play was paused
-
-      if (stepIndex >= replaySteps.length) {
-        // Root moves complete, start PV phase if available
-        if (thinkingData.principalVariation && thinkingData.principalVariation.length > 1) {
-          setReplayPhase('pv');
-          setCurrentReplayStep(null);
-          animatePVStep(0);
-        } else {
-          // No PV, end replay
-          setIsReplaying(false);
-          setIsAutoPlaying(false);
-          isAutoPlayingRef.current = false;
-          setReplayPhase(null);
-          replayTimeoutRef.current = setTimeout(() => {
-            setCurrentReplayStep(null);
-          }, 500);
-        }
-        return;
-      }
-
-      setCurrentReplayStep(stepIndex);
-      replayTimeoutRef.current = setTimeout(() => {
-        if (isAutoPlayingRef.current) {
-          animateRootStep(stepIndex + 1);
-        }
-      }, 400);
-    };
-
-    // Phase 2: Principal Variation
-    const animatePVStep = (pvIndex: number) => {
-      if (!isAutoPlayingRef.current) return; // Stop if auto-play was paused
-
-      if (!thinkingData.principalVariation || pvIndex >= thinkingData.principalVariation.length) {
-        // PV complete
-        setIsReplaying(false);
-        setIsAutoPlaying(false);
-        isAutoPlayingRef.current = false;
-        setReplayPhase(null);
-        setCurrentPVStep(null);
-        replayTimeoutRef.current = setTimeout(() => {
-          setCurrentReplayStep(null);
-        }, 500);
-        return;
-      }
-
-      setCurrentPVStep(pvIndex);
-      replayTimeoutRef.current = setTimeout(() => {
-        if (isAutoPlayingRef.current) {
-          animatePVStep(pvIndex + 1);
-        }
-      }, 600);
-    };
-
-    // Start from current position
-    if (replayPhase === 'pv' && currentPVStep !== null) {
-      animatePVStep(currentPVStep);
-    } else if (replayPhase === 'root' && currentReplayStep !== null) {
-      animateRootStep(currentReplayStep);
-    } else {
-      animateRootStep(0);
-    }
-
-    return () => {
-      if (replayTimeoutRef.current) {
-        clearTimeout(replayTimeoutRef.current);
-        replayTimeoutRef.current = null;
-      }
-    };
-  }, [isAutoPlaying, isReplaying, replayPhase, currentReplayStep, currentPVStep, replaySteps.length, thinkingData]);
-
   const handleReset = () => {
     clearThinking();
-    setReplaySteps([]);
-    setCurrentReplayStep(null);
-    setIsReplaying(false);
-    setIsAutoPlaying(false);
-    isAutoPlayingRef.current = false;
-    setReplayPhase(null);
-    setCurrentPVStep(null);
     // Reset cumulative statistics
     setTotalNodesEvaluated(0);
     setTotalBranchesPruned(0);
     setTotalSearchTime(0);
-    if (replayTimeoutRef.current) {
-      clearTimeout(replayTimeoutRef.current);
-      replayTimeoutRef.current = null;
-    }
     reset();
   };
 
   const getGameOverMessage = () => {
-    if (gameState.status === 'tie') {
-      return "It's a Tie!";
+    if (gameState.status === 'draw') {
+      return "It's a Draw!";
     }
     if (gameState.winner === gameState.humanPlayer) {
       return 'You win!';
@@ -390,8 +127,9 @@ export default function Home() {
   };
 
   const showSymbolSelector = gameState.status === 'symbol-selection';
-  const showGameOver = gameState.status === 'won' || gameState.status === 'tie';
+  const showGameOver = gameState.status === 'won' || gameState.status === 'draw';
   const isClickable = isHumanTurn && gameState.status === 'playing';
+  const moveEvaluationMap = thinkingData ? getMoveEvaluationMap(thinkingData) : {};
 
   return (
     <div className="container">
@@ -428,43 +166,9 @@ export default function Home() {
               winningCells={gameState.winningCells}
               onCellClick={handleCellClick}
               isClickable={isClickable}
-              currentReplayStep={currentReplayStep}
-              replaySteps={replaySteps}
-              replayPhase={replayPhase}
-              currentPVStep={currentPVStep}
-              principalVariation={thinkingData?.principalVariation}
-              aiPlayer={gameState.aiPlayer}
-              humanPlayer={gameState.humanPlayer}
-            />
-            
-            {isReplayToggled && isReplaying && currentReplayStep !== null && replayPhase === 'root' && (
-              <ReplayCaption
-                currentStep={replaySteps[currentReplayStep]}
-                stepIndex={currentReplayStep}
-                totalSteps={replaySteps.length}
-                gridSize={gridSize}
-              />
-            )}
-            
-            <ReplayControls
-              onToggle={handleReplayToggle}
-              onPrevious={handleReplayPrevious}
-              onNext={handleReplayNext}
-              onToggleAutoPlay={handleToggleAutoPlay}
-              disabled={!thinkingData || replaySteps.length === 0}
-              isToggled={isReplayToggled}
-              isActive={isReplaying}
-              isAutoPlaying={isAutoPlaying}
-              canGoPrevious={
-                (replayPhase === 'root' && currentReplayStep !== null && currentReplayStep > 0) ||
-                (replayPhase === 'pv' && currentPVStep !== null && currentPVStep > 0) ||
-                (replayPhase === 'pv' && currentPVStep === 0)
-              }
-              canGoNext={
-                (replayPhase === 'root' && currentReplayStep !== null && currentReplayStep < replaySteps.length - 1) ||
-                (replayPhase === 'pv' && currentPVStep !== null && thinkingData?.principalVariation && currentPVStep < thinkingData.principalVariation.length - 1) ||
-                (replayPhase === 'root' && currentReplayStep === replaySteps.length - 1 && (thinkingData?.principalVariation?.length ?? 0) > 1)
-              }
+              evaluations={moveEvaluationMap}
+              showStatsOverlay={showStatsOverlay}
+              chosenMove={thinkingData?.chosenMove ?? null}
             />
             
             <ResetButton onReset={handleReset} />
@@ -473,6 +177,17 @@ export default function Home() {
           {showThinkingPanel && (
             <div className="sidebar-panel">
               <ModeSelector gridSize={gridSize} onGridSizeChange={setGridSize} />
+              <div className="overlay-toggle">
+                <label className="toggle-switch compact">
+                  <input
+                    type="checkbox"
+                    checked={showStatsOverlay}
+                    onChange={(e) => setShowStatsOverlay(e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                  <span className="toggle-label">Show stats overlay</span>
+                </label>
+              </div>
               <AIThinkingPanel 
                 thinkingData={thinkingData} 
                 gridSize={gridSize}
