@@ -135,7 +135,6 @@ export function useGame(gridSize: number = 3) {
     reset,
     isHumanTurn,
     isAITurn,
-    gridSize,
   };
 }
 
