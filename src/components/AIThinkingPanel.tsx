@@ -54,9 +54,13 @@ export default function AIThinkingPanel({
   totalBranchesPruned,
   totalSearchTime
 }: AIThinkingPanelProps) {
+  const panelClassName = `ai-thinking-panel ${
+    thinkingData ? 'ai-thinking-panel--expanded' : 'ai-thinking-panel--compact'
+  }`;
+
   if (!thinkingData) {
     return (
-      <div className="ai-thinking-panel">
+      <div className={panelClassName}>
         <h3>🧠 AI Thinking</h3>
         <p className="no-data" title="The AI will analyze the board after you make your move">
           💭 No analysis available yet.<br />
@@ -71,7 +75,7 @@ export default function AIThinkingPanel({
   const pruningEfficiency = ((thinkingData.branchesPruned / (thinkingData.nodesEvaluated + thinkingData.branchesPruned)) * 100);
 
   return (
-    <div className="ai-thinking-panel">
+    <div className={panelClassName}>
       <h3 title="Detailed analysis of the AI's decision-making process">🧠 AI Thinking</h3>
       <div className="thinking-content">
         <div className="thinking-text" title={`Analysis completed in ${thinkingData.searchTime?.toFixed(2) || 'N/A'}ms`}>

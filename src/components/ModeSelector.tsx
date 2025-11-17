@@ -7,8 +7,8 @@ interface ModeSelectorProps {
 
 export default function ModeSelector({ gridSize, onGridSizeChange }: ModeSelectorProps) {
   return (
-    <div className="mode-selector">
-      <div className="mode-selector-label">Game Mode:</div>
+    <div className="mode-selector" role="group" aria-label="Select game mode">
+      <span className="mode-selector-label">Game Mode:</span>
       <div className="mode-selector-buttons">
         <button
           className={`mode-button ${gridSize === 3 ? 'active' : ''}`}

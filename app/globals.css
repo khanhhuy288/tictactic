@@ -361,13 +361,14 @@ body {
 
 /* AI Thinking Panel */
 .ai-thinking-panel {
-  flex: 0 0 320px;
   width: 320px;
   max-width: 100%;
   min-width: 0;
   background-color: rgba(56, 50, 50, 0.8);
   border-radius: 10px;
   padding: 20px;
+  transition: padding 0.25s ease;
+  height: fit-content;
 }
 
 .ai-thinking-panel h3 {
@@ -668,15 +669,31 @@ body {
   .toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
     transform: translateX(18px);
   }
+
+  .mode-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mode-selector-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mode-button {
+    flex: 1;
+  }
 }
 
 /* Mode Selector */
 .mode-selector {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 20px;
-  padding: 15px;
+  padding: 12px 16px;
   background-color: rgba(56, 50, 50, 0.6);
   border-radius: 8px;
   border: 2px solid #BE8B64;
@@ -688,11 +705,14 @@ body {
   color: #BE8B64;
   text-transform: uppercase;
   letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .mode-selector-buttons {
   display: flex;
   gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .mode-button {
