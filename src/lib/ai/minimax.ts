@@ -494,7 +494,7 @@ export function findBestMoveWithDepthLimit(
   };
 
   let bestVal = -Infinity;
-  let bestMove = -1;
+  const bestMoves: number[] = [];
   const evaluations: MoveEvaluation[] = [];
 
   // Evaluate all possible moves
@@ -555,8 +555,11 @@ export function findBestMoveWithDepthLimit(
       board[i] = originalValue;
 
       if (moveVal > bestVal) {
-        bestMove = i;
         bestVal = moveVal;
+        bestMoves.length = 0;
+        bestMoves.push(i);
+      } else if (Math.abs(moveVal - bestVal) < 1e-6) {
+        bestMoves.push(i);
       }
     }
   }
@@ -564,10 +567,15 @@ export function findBestMoveWithDepthLimit(
   const endTime = performance.now();
   const searchTime = endTime - startTime;
 
-  const principalVariation: number[] = bestMove >= 0 ? [bestMove] : [];
+  const chosenMove =
+    bestMoves.length > 0
+      ? bestMoves[Math.floor(Math.random() * bestMoves.length)]
+      : -1;
+
+  const principalVariation: number[] = chosenMove >= 0 ? [chosenMove] : [];
 
   const thinking: ThinkingData = {
-    chosenMove: bestMove,
+    chosenMove,
     chosenScore: bestVal,
     evaluations,
     nodesEvaluated: context.nodesEvaluated,
@@ -578,6 +586,6 @@ export function findBestMoveWithDepthLimit(
     principalVariation,
   };
 
-  return { move: bestMove, thinking };
+  return { move: chosenMove, thinking };
 }
 
