@@ -89,27 +89,27 @@ export function formatThinkingData(
   // Statistics
   lines.push('📈 **Search Statistics**');
   const pruningEfficiency = ((thinkingData.branchesPruned / (thinkingData.nodesEvaluated + thinkingData.branchesPruned)) * 100);
-  const nodesEvaluatedText = `  • Nodes Evaluated: ${thinkingData.nodesEvaluated.toLocaleString()}`;
+  const nodesEvaluatedText = `    • Nodes Evaluated: ${thinkingData.nodesEvaluated.toLocaleString()}`;
   const nodesEvaluatedWithTotal = totalNodesEvaluated !== undefined 
     ? `${nodesEvaluatedText} (Total: ${totalNodesEvaluated.toLocaleString()})`
     : nodesEvaluatedText;
   lines.push(nodesEvaluatedWithTotal);
   
-  const branchesPrunedBase = `  • Branches Pruned: ${thinkingData.branchesPruned.toLocaleString()}`;
+  const branchesPrunedBase = `    • Branches Pruned: ${thinkingData.branchesPruned.toLocaleString()}`;
   const emoji = pruningEfficiency > 50 ? ' 🚀' : '';
   const branchesPrunedWithTotal = totalBranchesPruned !== undefined 
     ? `${branchesPrunedBase} (Total: ${totalBranchesPruned.toLocaleString()})${emoji}`
     : `${branchesPrunedBase}${emoji}`;
   lines.push(branchesPrunedWithTotal);
-  lines.push(`  • Max Depth: ${thinkingData.maxDepth}`);
-  lines.push(`  • Pruning Efficiency: ${pruningEfficiency.toFixed(1)}% ${pruningEfficiency > 70 ? '✨' : ''}`);
+  lines.push(`    • Max Depth: ${thinkingData.maxDepth}`);
+  lines.push(`    • Pruning Efficiency: ${pruningEfficiency.toFixed(1)}% ${pruningEfficiency > 70 ? '✨' : ''}`);
   lines.push('');
   
   // Terminal states
   lines.push('🎯 **Terminal States Found**');
-  lines.push(`  • Wins: ${thinkingData.terminalStatesFound.wins} 👑`);
-  lines.push(`  • Losses: ${thinkingData.terminalStatesFound.losses} 💀`);
-  lines.push(`  • Draws: ${thinkingData.terminalStatesFound.draws} ⚖️`);
+  lines.push(`    • Wins: ${thinkingData.terminalStatesFound.wins} 👑`);
+  lines.push(`    • Losses: ${thinkingData.terminalStatesFound.losses} 💀`);
+  lines.push(`    • Draws: ${thinkingData.terminalStatesFound.draws} ⚖️`);
   lines.push('');
   
   return lines.join('\n');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { Player, GameState, GameResult } from '@/lib/game/types';
 import { createGameState, setPlayers, resetGameState } from '@/lib/game/gameState';
 import { makeMove } from '@/lib/game/board';
@@ -8,11 +8,6 @@ import { checkWin, checkDraw } from '@/lib/game/winDetection';
 
 export function useGame(gridSize: number = 3) {
   const [gameState, setGameState] = useState<GameState>(() => createGameState(gridSize));
-
-  // Reset game when gridSize changes
-  useEffect(() => {
-    setGameState((prev) => resetGameState(prev, gridSize));
-  }, [gridSize]);
 
   const selectSymbol = useCallback((player: Player) => {
     setGameState((prev) => {
@@ -122,9 +117,12 @@ export function useGame(gridSize: number = 3) {
     [gridSize]
   );
 
-  const reset = useCallback(() => {
-    setGameState((prev) => resetGameState(prev, gridSize));
-  }, [gridSize]);
+  const reset = useCallback(
+    (nextGridSize?: number) => {
+      setGameState((prev) => resetGameState(prev, nextGridSize ?? gridSize));
+    },
+    [gridSize]
+  );
 
   const isHumanTurn = gameState.status === 'playing' && gameState.currentPlayer === gameState.humanPlayer;
   const isAITurn = gameState.status === 'playing' && gameState.currentPlayer === gameState.aiPlayer;

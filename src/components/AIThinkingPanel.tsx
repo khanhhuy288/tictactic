@@ -39,8 +39,11 @@ function formatTextWithMarkdown(text: string): React.ReactNode[] {
       parts.push(line);
     }
     
+    const isEmptyLine = line.trim() === '';
+    const className = isEmptyLine ? 'thinking-line thinking-line-empty' : 'thinking-line';
+
     return (
-      <div key={index} className={line.trim() === '' ? 'thinking-line-empty' : 'thinking-line'}>
+      <div key={index} className={className}>
         {parts}
       </div>
     );
@@ -72,6 +75,7 @@ export default function AIThinkingPanel({
 
   const formattedText = formatThinkingData(thinkingData, gridSize, totalNodesEvaluated, totalBranchesPruned, totalSearchTime);
   const formattedContent = formatTextWithMarkdown(formattedText);
+  const pruningEfficiency = ((thinkingData.branchesPruned / (thinkingData.nodesEvaluated + thinkingData.branchesPruned)) * 100);
 
   return (
     <div className={panelClassName}>
