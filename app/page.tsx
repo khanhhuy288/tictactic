@@ -10,9 +10,12 @@ import ResetButton from '@/components/ResetButton';
 import AIThinkingPanel from '@/components/AIThinkingPanel';
 import ReplayCaption from '@/components/ReplayCaption';
 import ReplayControls from '@/components/ReplayControls';
+import ModeSelector from '@/components/ModeSelector';
 import { generateReplaySteps, type ReplayStep } from '@/lib/ai/thinking';
 
 export default function Home() {
+  const [gridSize, setGridSize] = useState(3);
+  
   const {
     gameState,
     selectSymbol,
@@ -21,13 +24,32 @@ export default function Home() {
     reset,
     isHumanTurn,
     isAITurn,
-    gridSize,
-  } = useGame();
+  } = useGame(gridSize);
 
   const isProcessingAIMove = useRef(false);
   const [showThinkingPanel, setShowThinkingPanel] = useState(true);
   const [useAlphaBetaPruning, setUseAlphaBetaPruning] = useState(true);
   const { calculateMove, getRandomCornerMove, thinkingData, clearThinking } = useAIPlayer(gridSize, useAlphaBetaPruning);
+
+  // Reset game and clear thinking data when gridSize changes
+  useEffect(() => {
+    clearThinking();
+    setReplaySteps([]);
+    setCurrentReplayStep(null);
+    setIsReplaying(false);
+    setIsAutoPlaying(false);
+    isAutoPlayingRef.current = false;
+    setReplayPhase(null);
+    setCurrentPVStep(null);
+    setTotalNodesEvaluated(0);
+    setTotalBranchesPruned(0);
+    setTotalSearchTime(0);
+    if (replayTimeoutRef.current) {
+      clearTimeout(replayTimeoutRef.current);
+      replayTimeoutRef.current = null;
+    }
+    // Game reset is handled by useGame hook's useEffect
+  }, [gridSize, clearThinking]);
   
   // Cumulative statistics tracking
   const [totalNodesEvaluated, setTotalNodesEvaluated] = useState(0);
@@ -449,13 +471,16 @@ export default function Home() {
           </div>
 
           {showThinkingPanel && (
-            <AIThinkingPanel 
-              thinkingData={thinkingData} 
-              gridSize={gridSize}
-              totalNodesEvaluated={totalNodesEvaluated}
-              totalBranchesPruned={totalBranchesPruned}
-              totalSearchTime={totalSearchTime}
-            />
+            <div>
+              <ModeSelector gridSize={gridSize} onGridSizeChange={setGridSize} />
+              <AIThinkingPanel 
+                thinkingData={thinkingData} 
+                gridSize={gridSize}
+                totalNodesEvaluated={totalNodesEvaluated}
+                totalBranchesPruned={totalBranchesPruned}
+                totalSearchTime={totalSearchTime}
+              />
+            </div>
           )}
         </div>
 

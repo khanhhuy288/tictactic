@@ -1,8 +1,10 @@
 import type { Board, Player } from '../game/types';
-import { findBestMoveWithThinking } from './minimax';
+import { findBestMoveWithThinking, findBestMoveWithDepthLimit } from './minimax';
+import { evaluate } from './evaluator';
 import type { ThinkingData } from './thinking';
 
 const GRID_SIZE = 3;
+const MAX_DEPTH_4X4 = 3; // Depth limit for 4x4 to keep performance reasonable
 
 /**
  * AI Player interface for making moves.
@@ -30,11 +32,23 @@ export class AIPlayer {
   ): { move: number; thinking: ThinkingData } {
     // For 3×3, use perfect minimax
     if (this.gridSize === 3) {
-      return findBestMoveWithThinking(board, aiPlayer, humanPlayer, this.useAlphaBetaPruning);
+      return findBestMoveWithThinking(board, aiPlayer, humanPlayer, this.gridSize, this.useAlphaBetaPruning);
     }
 
-    // For larger grids (4×4+), would use heuristic evaluation
-    // This is a placeholder for future implementation
+    // For 4×4, use depth-limited minimax with heuristic evaluation
+    if (this.gridSize === 4) {
+      return findBestMoveWithDepthLimit(
+        board,
+        aiPlayer,
+        humanPlayer,
+        this.gridSize,
+        MAX_DEPTH_4X4,
+        this.useAlphaBetaPruning,
+        evaluate
+      );
+    }
+
+    // For other grid sizes, not yet supported
     throw new Error(`Grid size ${this.gridSize} not yet supported`);
   }
 
