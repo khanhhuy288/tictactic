@@ -213,7 +213,7 @@ export function findBestMoveWithThinking(
   };
 
   let bestVal = -Infinity;
-  let bestMove = -1;
+  const bestMoves: number[] = [];
   const evaluations: MoveEvaluation[] = [];
 
   // Evaluate all possible moves
@@ -279,8 +279,11 @@ export function findBestMoveWithThinking(
 
       // Update best move
       if (moveVal > bestVal) {
-        bestMove = i;
         bestVal = moveVal;
+        bestMoves.length = 0;
+        bestMoves.push(i);
+      } else if (Math.abs(moveVal - bestVal) < 1e-6) {
+        bestMoves.push(i);
       }
     }
   }
@@ -290,10 +293,13 @@ export function findBestMoveWithThinking(
 
   // Extract principal variation (simplified: just the chosen move for now)
   // TODO: Enhance to track full PV during search
-  const principalVariation: number[] = bestMove >= 0 ? [bestMove] : [];
+  const randomIndex = bestMoves.length > 0 ? Math.floor(Math.random() * bestMoves.length) : -1;
+  const chosenMove = randomIndex >= 0 ? bestMoves[randomIndex] : -1;
+
+  const principalVariation: number[] = chosenMove >= 0 ? [chosenMove] : [];
 
   const thinking: ThinkingData = {
-    chosenMove: bestMove,
+    chosenMove,
     chosenScore: bestVal,
     evaluations,
     nodesEvaluated: context.nodesEvaluated,
@@ -304,7 +310,7 @@ export function findBestMoveWithThinking(
     principalVariation,
   };
 
-  return { move: bestMove, thinking };
+  return { move: chosenMove, thinking };
 }
 
 /**
