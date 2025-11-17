@@ -11,10 +11,6 @@ interface GameBoardProps {
   onCellClick: (index: number) => void;
   isClickable: boolean;
   evaluations: Record<number, MoveEvaluation>;
-  focusedMove: number | null;
-  selectedMove: number | null;
-  onHoverMove: (moveIndex: number | null) => void;
-  onSelectMove: (moveIndex: number) => void;
   showStatsOverlay: boolean;
   chosenMove?: number | null;
 }
@@ -26,10 +22,6 @@ export default function GameBoard({
   onCellClick,
   isClickable,
   evaluations,
-  focusedMove,
-  selectedMove,
-  onHoverMove,
-  onSelectMove,
   showStatsOverlay,
   chosenMove = null,
 }: GameBoardProps) {
@@ -47,11 +39,7 @@ export default function GameBoard({
             isClickable={isClickable}
             evaluation={evaluation}
             isOverlayVisible={showStatsOverlay}
-            isFocused={focusedMove === index}
-            isSelected={selectedMove === index}
             isChosen={chosenMove === index}
-            onOverlayHover={showStatsOverlay ? onHoverMove : undefined}
-            onOverlaySelect={showStatsOverlay ? onSelectMove : undefined}
           />
         );
       })}

@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Player, GameState, GameResult } from '@/lib/game/types';
 import { createGameState, setPlayers, resetGameState } from '@/lib/game/gameState';
 import { makeMove } from '@/lib/game/board';
-import { checkWin, checkTie } from '@/lib/game/winDetection';
+import { checkWin, checkDraw } from '@/lib/game/winDetection';
 
 export function useGame(gridSize: number = 3) {
   const [gameState, setGameState] = useState<GameState>(() => createGameState(gridSize));
@@ -49,12 +49,12 @@ export function useGame(gridSize: number = 3) {
           };
         }
 
-        if (checkTie(newBoard)) {
-          result = { winner: null, winningCells: null, isTie: true };
+        if (checkDraw(newBoard)) {
+          result = { winner: null, winningCells: null, isDraw: true };
           return {
             ...prev,
             board: newBoard,
-            status: 'tie',
+            status: 'draw',
           };
         }
 
@@ -100,12 +100,12 @@ export function useGame(gridSize: number = 3) {
           };
         }
 
-        if (checkTie(newBoard)) {
-          result = { winner: null, winningCells: null, isTie: true };
+        if (checkDraw(newBoard)) {
+          result = { winner: null, winningCells: null, isDraw: true };
           return {
             ...prev,
             board: newBoard,
-            status: 'tie',
+            status: 'draw',
           };
         }
 

@@ -41,7 +41,7 @@ export function checkWin(
       return {
         winner: player,
         winningCells: winCombo,
-        isTie: false,
+          isDraw: false,
       };
     }
   }
@@ -50,11 +50,11 @@ export function checkWin(
 }
 
 /**
- * Check if the game is a tie (board is full and no winner).
+ * Check if the game is a draw (board is full and no winner).
  * @param board The board to check.
- * @returns True if the game is a tie.
+ * @returns True if the game is a draw.
  */
-export function checkTie(board: Board): boolean {
+export function checkDraw(board: Board): boolean {
   return !hasEmptyCells(board);
 }
 

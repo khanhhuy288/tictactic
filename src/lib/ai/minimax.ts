@@ -5,7 +5,17 @@ import type { MoveEvaluation, ThinkingData } from './thinking';
 
 const WIN_SCORE = 100;
 const LOSS_SCORE = -100;
-const TIE_SCORE = 0;
+const DRAW_SCORE = 0;
+
+function deriveOutcomeDepth(score: number, outcome: MoveEvaluation['outcome']): number | undefined {
+  if (outcome === 'win') {
+    return Math.max(0, WIN_SCORE - score);
+  }
+  if (outcome === 'loss') {
+    return Math.max(0, score - LOSS_SCORE);
+  }
+  return undefined;
+}
 
 interface MinimaxContext {
   nodesEvaluated: number;
@@ -14,7 +24,7 @@ interface MinimaxContext {
   terminalStates: {
     wins: number;
     losses: number;
-    ties: number;
+    draws: number;
   };
   activeRootEvaluation: MoveEvaluation | null;
   // Per-root-move tracking
@@ -84,10 +94,10 @@ export function minimax(
     return LOSS_SCORE + depth; // Prefer longer paths to loss
   }
 
-  // Check for tie
+  // Check for draw
   if (!hasEmptyCells(board)) {
-    context.terminalStates.ties++;
-    return TIE_SCORE;
+    context.terminalStates.draws++;
+    return DRAW_SCORE;
   }
 
   // AI player is the maximizer
@@ -194,7 +204,7 @@ export function findBestMoveWithThinking(
     terminalStates: {
       wins: 0,
       losses: 0,
-      ties: 0,
+      draws: 0,
     },
     activeRootEvaluation: null,
     rootMoveMaxDepth: 0,
@@ -250,17 +260,17 @@ export function findBestMoveWithThinking(
 
       // Store evaluation
       moveEval.score = moveVal;
-      moveEval.depth = context.rootMoveMaxDepth;
-      // Determine outcome from score
       if (moveVal > 50) {
         moveEval.outcome = 'win';
       } else if (moveVal < -50) {
         moveEval.outcome = 'loss';
       } else if (moveVal === 0) {
-        moveEval.outcome = 'tie';
+        moveEval.outcome = 'draw';
       } else {
         moveEval.outcome = 'unknown';
       }
+      const outcomeDepth = deriveOutcomeDepth(moveEval.score, moveEval.outcome);
+      moveEval.depth = outcomeDepth ?? context.rootMoveMaxDepth;
       evaluations.push(moveEval);
       context.activeRootEvaluation = null;
 
@@ -346,10 +356,10 @@ function minimaxWithDepthLimit(
     return LOSS_SCORE + depth;
   }
 
-  // Check for tie
+  // Check for draw
   if (!hasEmptyCells(board)) {
-    context.terminalStates.ties++;
-    return TIE_SCORE;
+    context.terminalStates.draws++;
+    return DRAW_SCORE;
   }
 
   // If we've reached max depth, use heuristic evaluation
@@ -469,7 +479,7 @@ export function findBestMoveWithDepthLimit(
     terminalStates: {
       wins: 0,
       losses: 0,
-      ties: 0,
+      draws: 0,
     },
     activeRootEvaluation: null,
     rootMoveMaxDepth: 0,
@@ -521,17 +531,18 @@ export function findBestMoveWithDepthLimit(
       moveEval.maxDepthReached = context.rootMoveMaxDepth;
       moveEval.branchesPruned = context.branchesPruned - context.rootMovePruneStart;
       moveEval.score = moveVal;
-      moveEval.depth = context.rootMoveMaxDepth;
       
       if (moveVal > 50) {
         moveEval.outcome = 'win';
       } else if (moveVal < -50) {
         moveEval.outcome = 'loss';
       } else if (moveVal === 0) {
-        moveEval.outcome = 'tie';
+        moveEval.outcome = 'draw';
       } else {
         moveEval.outcome = 'unknown';
       }
+      const outcomeDepth = deriveOutcomeDepth(moveEval.score, moveEval.outcome);
+      moveEval.depth = outcomeDepth ?? context.rootMoveMaxDepth;
       
       evaluations.push(moveEval);
       context.activeRootEvaluation = null;

@@ -1,6 +1,5 @@
 'use client';
 
-import type { MouseEvent } from 'react';
 import type { Player, CellValue } from '@/lib/game/types';
 import { isEmptyCell } from '@/lib/game/board';
 import type { MoveEvaluation } from '@/lib/ai/thinking';
@@ -13,18 +12,14 @@ interface CellProps {
   isClickable: boolean;
   evaluation?: MoveEvaluation;
   isOverlayVisible: boolean;
-  isFocused: boolean;
-  isSelected: boolean;
   isChosen: boolean;
-  onOverlayHover?: (moveIndex: number | null) => void;
-  onOverlaySelect?: (moveIndex: number) => void;
 }
 
-function getOutcomeClass(outcome: 'win' | 'loss' | 'tie' | 'unknown' | null | undefined): string {
+function getOutcomeClass(outcome: 'win' | 'loss' | 'draw' | 'unknown' | null | undefined): string {
   if (!outcome) return '';
   if (outcome === 'win') return 'overlay-win';
   if (outcome === 'loss') return 'overlay-loss';
-  if (outcome === 'tie') return 'overlay-draw';
+  if (outcome === 'draw') return 'overlay-draw';
   return '';
 }
 
@@ -41,14 +36,12 @@ export default function Cell({
   isClickable,
   evaluation,
   isOverlayVisible,
-  isFocused,
-  isSelected,
   isChosen,
-  onOverlayHover,
-  onOverlaySelect,
 }: CellProps) {
   const isEmpty = isEmptyCell(value);
   const player = isEmpty ? null : (value as Player);
+  const nodesLabel = evaluation?.nodesVisited?.toLocaleString() ?? '—';
+  const showPartial = evaluation?.fullyEvaluated === false;
   
   const handleClick = () => {
     if (isClickable && isEmpty) {
@@ -60,32 +53,11 @@ export default function Cell({
   const overlayClasses = [
     'cell-overlay',
     outcomeClass,
-    isFocused ? 'overlay-focused' : '',
-    isSelected ? 'overlay-selected' : '',
     isChosen ? 'overlay-chosen' : '',
-    evaluation?.pruned ? 'overlay-pruned' : '',
-    evaluation?.fullyEvaluated === false ? 'overlay-partial' : '',
+    showPartial ? 'overlay-partial' : '',
   ]
     .filter(Boolean)
     .join(' ');
-
-  const handleOverlayEnter = () => {
-    if (isOverlayVisible && evaluation && onOverlayHover) {
-      onOverlayHover(index);
-    }
-  };
-
-  const handleOverlayLeave = () => {
-    if (isOverlayVisible && onOverlayHover) {
-      onOverlayHover(null);
-    }
-  };
-
-  const handleOverlayClick = (event: MouseEvent<HTMLButtonElement>) => {
-    if (!isOverlayVisible || !evaluation) return;
-    event.stopPropagation();
-    onOverlaySelect?.(index);
-  };
 
   return (
     <div
@@ -101,29 +73,21 @@ export default function Cell({
         </span>
       )}
       {isOverlayVisible && evaluation && (
-        <button
-          type="button"
+        <div
           className={overlayClasses}
-          onMouseEnter={handleOverlayEnter}
-          onMouseLeave={handleOverlayLeave}
-          onFocus={handleOverlayEnter}
-          onBlur={handleOverlayLeave}
-          onClick={handleOverlayClick}
-          aria-label={`AI evaluation for cell ${index + 1}`}
+          aria-hidden="true"
         >
-          <span className="overlay-score">{formatScore(evaluation.score)}</span>
-          <span className="overlay-nodes">
-            {evaluation.nodesVisited?.toLocaleString() ?? '—'} nodes
-          </span>
-          <span className="overlay-depth">depth {evaluation.maxDepthReached ?? evaluation.depth}</span>
-          {evaluation.pruned && (
-            <span className="overlay-flag" aria-label="Pruned early">
-              ✂️
+          <div className="overlay-top">
+            <span className="overlay-score">{formatScore(evaluation.score)}</span>
+          </div>
+          <div className="overlay-metrics">
+            <span className="overlay-chip">
+              <span className="chip-label">Nodes</span>
+              <span className="chip-value">{nodesLabel}</span>
             </span>
-          )}
-        </button>
+          </div>
+        </div>
       )}
     </div>
   );
 }
-

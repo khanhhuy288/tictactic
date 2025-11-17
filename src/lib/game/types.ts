@@ -12,12 +12,12 @@ export interface GameState {
   winningCells: number[] | null;
 }
 
-export type GameStatus = 'idle' | 'symbol-selection' | 'playing' | 'won' | 'tie';
+export type GameStatus = 'idle' | 'symbol-selection' | 'playing' | 'won' | 'draw';
 
 export interface GameResult {
   winner: Player | null;
   winningCells: number[] | null;
-  isTie: boolean;
+  isDraw: boolean;
 }
 
 export interface MoveResult {

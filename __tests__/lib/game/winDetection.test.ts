@@ -1,4 +1,4 @@
-import { checkWin, checkTie } from '@/lib/game/winDetection';
+import { checkWin, checkDraw } from '@/lib/game/winDetection';
 import type { Board } from '@/lib/game/types';
 
 describe('winDetection', () => {
@@ -34,15 +34,15 @@ describe('winDetection', () => {
     });
   });
 
-  describe('checkTie', () => {
+  describe('checkDraw', () => {
     it('should return true when board is full and no winner', () => {
       const board: Board = ['X', 'O', 'X', 'O', 'X', 'O', 'O', 'X', 'O'];
-      expect(checkTie(board)).toBe(true);
+      expect(checkDraw(board)).toBe(true);
     });
 
     it('should return false when board has empty cells', () => {
       const board: Board = ['X', 'O', 'X', 3, 4, 5, 6, 7, 8];
-      expect(checkTie(board)).toBe(false);
+      expect(checkDraw(board)).toBe(false);
     });
   });
 });

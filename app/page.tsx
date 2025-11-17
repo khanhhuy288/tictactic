@@ -10,7 +10,6 @@ import ResetButton from '@/components/ResetButton';
 import AIThinkingPanel from '@/components/AIThinkingPanel';
 import ModeSelector from '@/components/ModeSelector';
 import { getMoveEvaluationMap } from '@/lib/ai/thinking';
-import AIMoveSummary from '@/components/AIMoveSummary';
 
 export default function Home() {
   const [gridSize, setGridSize] = useState(3);
@@ -30,24 +29,20 @@ export default function Home() {
   const [useAlphaBetaPruning, setUseAlphaBetaPruning] = useState(true);
   const [showStatsOverlay, setShowStatsOverlay] = useState(true);
   const { calculateMove, getRandomCornerMove, thinkingData, clearThinking } = useAIPlayer(gridSize, useAlphaBetaPruning);
-  const [focusedMove, setFocusedMove] = useState<number | null>(null);
-  const [selectedMove, setSelectedMove] = useState<number | null>(null);
 
+  // Cumulative statistics tracking
+  const [totalNodesEvaluated, setTotalNodesEvaluated] = useState(0);
+  const [totalBranchesPruned, setTotalBranchesPruned] = useState(0);
+  const [totalSearchTime, setTotalSearchTime] = useState(0);
+  
   // Reset game and clear thinking data when gridSize changes
   useEffect(() => {
     clearThinking();
     setTotalNodesEvaluated(0);
     setTotalBranchesPruned(0);
     setTotalSearchTime(0);
-    setSelectedMove(null);
-    setFocusedMove(null);
     // Game reset is handled by useGame hook's useEffect
   }, [gridSize, clearThinking]);
-  
-  // Cumulative statistics tracking
-  const [totalNodesEvaluated, setTotalNodesEvaluated] = useState(0);
-  const [totalBranchesPruned, setTotalBranchesPruned] = useState(0);
-  const [totalSearchTime, setTotalSearchTime] = useState(0);
   
   // Handle AI's first move when AI is X
   useEffect(() => {
@@ -109,11 +104,6 @@ export default function Home() {
       if (thinkingData.searchTime !== undefined) {
         setTotalSearchTime(prev => prev + thinkingData.searchTime!);
       }
-      setSelectedMove(thinkingData.chosenMove);
-      setFocusedMove(null);
-    } else {
-      setSelectedMove(null);
-      setFocusedMove(null);
     }
   }, [thinkingData]);
 
@@ -123,14 +113,12 @@ export default function Home() {
     setTotalNodesEvaluated(0);
     setTotalBranchesPruned(0);
     setTotalSearchTime(0);
-    setSelectedMove(null);
-    setFocusedMove(null);
     reset();
   };
 
   const getGameOverMessage = () => {
-    if (gameState.status === 'tie') {
-      return "It's a Tie!";
+    if (gameState.status === 'draw') {
+      return "It's a Draw!";
     }
     if (gameState.winner === gameState.humanPlayer) {
       return 'You win!';
@@ -139,7 +127,7 @@ export default function Home() {
   };
 
   const showSymbolSelector = gameState.status === 'symbol-selection';
-  const showGameOver = gameState.status === 'won' || gameState.status === 'tie';
+  const showGameOver = gameState.status === 'won' || gameState.status === 'draw';
   const isClickable = isHumanTurn && gameState.status === 'playing';
   const moveEvaluationMap = thinkingData ? getMoveEvaluationMap(thinkingData) : {};
 
@@ -179,10 +167,6 @@ export default function Home() {
               onCellClick={handleCellClick}
               isClickable={isClickable}
               evaluations={moveEvaluationMap}
-              focusedMove={focusedMove}
-              selectedMove={selectedMove}
-              onHoverMove={setFocusedMove}
-              onSelectMove={(moveIndex) => setSelectedMove(moveIndex)}
               showStatsOverlay={showStatsOverlay}
               chosenMove={thinkingData?.chosenMove ?? null}
             />
@@ -211,16 +195,6 @@ export default function Home() {
                 totalBranchesPruned={totalBranchesPruned}
                 totalSearchTime={totalSearchTime}
               />
-              {thinkingData && (
-                <AIMoveSummary
-                  evaluations={thinkingData.evaluations}
-                  gridSize={gridSize}
-                  focusedMove={focusedMove}
-                  selectedMove={selectedMove}
-                  onHoverMove={setFocusedMove}
-                  onSelectMove={setSelectedMove}
-                />
-              )}
             </div>
           )}
         </div>
