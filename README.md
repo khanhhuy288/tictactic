@@ -38,16 +38,6 @@ This project is automatically deployed to GitHub Pages using GitHub Actions. The
 2. Builds the Next.js app as a static export
 3. Deploys to GitHub Pages
 
-### Manual Deployment Setup
-
-If you need to set up deployment manually:
-
-1. Go to repository Settings → Pages
-2. Under "Source", select "GitHub Actions"
-3. The workflow will automatically deploy on the next push to `main`
-
-The app is configured with `basePath: '/tictactic'` to work correctly on GitHub Pages.
-
 ## Tech Stack
 
 - **Framework**: Next.js 16
